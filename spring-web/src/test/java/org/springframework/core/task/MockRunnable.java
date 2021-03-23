@@ -16,6 +16,13 @@
 
 package org.springframework.core.task;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * @author Juergen Hoeller
  */
@@ -32,4 +39,8 @@ public class MockRunnable implements Runnable {
 		return this.executed;
 	}
 
+	public static void main(String[] args) {
+		ApplicationContext ctx = new ClassPathXmlApplicationContext("context.xml");
+
+	}
 }
