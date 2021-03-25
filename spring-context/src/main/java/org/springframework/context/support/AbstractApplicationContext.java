@@ -561,6 +561,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			// Tell the subclass to refresh the internal bean factory.
 			//创建容器对象：DefaultListableBeanFactory
 			//加载xml配置文件的属性值到当前工厂中，最重要的是BeanDefinition
+			//解析xml文件
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -631,9 +632,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Switch to active.
 		//设置启动时间
 		this.startupDate = System.currentTimeMillis();
+		//容器关闭标识
 		this.closed.set(false);
+		//容器的激活标识
 		this.active.set(true);
-
+		//记录日志
 		if (logger.isDebugEnabled()) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Refreshing " + this);
@@ -644,24 +647,29 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Initialize any placeholder property sources in the context environment.
+		//留给子类覆盖初始化属性资源
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable:
 		// see ConfigurablePropertyResolver#setRequiredProperties
+		//创建并获取环境对象，验证需要的属性文件是否加载到环境中
 		getEnvironment().validateRequiredProperties();
 
 		// Store pre-refresh ApplicationListeners...
+		//判断刷新前的应用程序监听集合是否未空，如果为空，则将监听器添加到此集合
 		if (this.earlyApplicationListeners == null) {
 			this.earlyApplicationListeners = new LinkedHashSet<>(this.applicationListeners);
 		}
 		else {
 			// Reset local application listeners to pre-refresh state.
+			//如果不为空，则清空集合元素对象
 			this.applicationListeners.clear();
 			this.applicationListeners.addAll(this.earlyApplicationListeners);
 		}
 
 		// Allow for the collection of early ApplicationEvents,
 		// to be published once the multicaster is available...
+		//创建刷新的监听事件集合
 		this.earlyApplicationEvents = new LinkedHashSet<>();
 	}
 
@@ -681,7 +689,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		//初始化beanfactory，读取xml文件，并将得到的beanfactory记录在当前实体的属性当中
 		refreshBeanFactory();
+		//返回当前实体的beanfactory属性
 		return getBeanFactory();
 	}
 

@@ -412,17 +412,22 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele, @Nullable BeanDefinition containingBean) {
+		//获取id的值
 		String id = ele.getAttribute(ID_ATTRIBUTE);
+		//获取name的值，作为别名的
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
 
 		List<String> aliases = new ArrayList<>();
 		if (StringUtils.hasLength(nameAttr)) {
+			//假如name字段有值，则进行解析操作，并添加到别名集合aliases中
+			//name的值可以用“,” “;” ",;" 分割，这里会解析为数组，当成多个别名使用
 			String[] nameArr = StringUtils.tokenizeToStringArray(nameAttr, MULTI_VALUE_ATTRIBUTE_DELIMITERS);
 			aliases.addAll(Arrays.asList(nameArr));
 		}
-
+       //id作为bean的名称
 		String beanName = id;
 		if (!StringUtils.hasText(beanName) && !aliases.isEmpty()) {
+			//假如id为空，且别名不为空，则取首个别名作为beanName
 			beanName = aliases.remove(0);
 			if (logger.isTraceEnabled()) {
 				logger.trace("No XML 'id' specified - using '" + beanName +
@@ -431,11 +436,14 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		if (containingBean == null) {
+			//判断在当前<beans>中 是否有相同的名称
 			checkNameUniqueness(beanName, aliases, ele);
 		}
-
+		//调用重载方法 进行解析
+		//主线
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
 		if (beanDefinition != null) {
+			//假如未声明别名和id的bean，则生成唯一的名称作为beanName
 			if (!StringUtils.hasText(beanName)) {
 				try {
 					if (containingBean != null) {
@@ -443,14 +451,17 @@ public class BeanDefinitionParserDelegate {
 								beanDefinition, this.readerContext.getRegistry(), true);
 					}
 					else {
+						//生成一个“类名”+“#数字”的名称
 						beanName = this.readerContext.generateBeanName(beanDefinition);
 						// Register an alias for the plain bean class name, if still possible,
 						// if the generator returned the class name plus a suffix.
 						// This is expected for Spring 1.2/2.0 backwards compatibility.
+						//获取类名
 						String beanClassName = beanDefinition.getBeanClassName();
 						if (beanClassName != null &&
 								beanName.startsWith(beanClassName) && beanName.length() > beanClassName.length() &&
 								!this.readerContext.getRegistry().isBeanNameInUse(beanClassName)) {
+							//假如类名称未使用，则将类名作为当前bean的别名
 							aliases.add(beanClassName);
 						}
 					}
@@ -465,6 +476,7 @@ public class BeanDefinitionParserDelegate {
 				}
 			}
 			String[] aliasesArray = StringUtils.toStringArray(aliases);
+			//将BeanDefinition封装至BeanDefinitionHolder中，并返回
 			return new BeanDefinitionHolder(beanDefinition, beanName, aliasesArray);
 		}
 
@@ -499,32 +511,42 @@ public class BeanDefinitionParserDelegate {
 	@Nullable
 	public AbstractBeanDefinition parseBeanDefinitionElement(
 			Element ele, String beanName, @Nullable BeanDefinition containingBean) {
-
+        //将当前bean解析入栈，记录解析<bean>的过程，parseState可以通过toString来打印调用栈链
+		//下面解析property的时候，也同样记录了
 		this.parseState.push(new BeanEntry(beanName));
 
 		String className = null;
+		//解析class
 		if (ele.hasAttribute(CLASS_ATTRIBUTE)) {
 			className = ele.getAttribute(CLASS_ATTRIBUTE).trim();
 		}
 		String parent = null;
+		//解析parent
 		if (ele.hasAttribute(PARENT_ATTRIBUTE)) {
 			parent = ele.getAttribute(PARENT_ATTRIBUTE);
 		}
 
 		try {
+            //根据类名和父类名创建BeanDefinition（实例化）
 			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
 
+            //解析DOM中的属性，并存入到AbstractBeanDefinition对象中
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
+			//设置描述
 			bd.setDescription(DomUtils.getChildElementValueByTagName(ele, DESCRIPTION_ELEMENT));
-
+			//对<Bean>元素的meta(元信息)属性解析
 			parseMetaElements(ele, bd);
+			//对<Bean>元素的lookup-method属性解析
 			parseLookupOverrideSubElements(ele, bd.getMethodOverrides());
+			//对<Bean>元素的replaced-method属性解析
 			parseReplacedMethodSubElements(ele, bd.getMethodOverrides());
-
+           //解析<Bean>元素的构造方法设置解析DTD或sax
 			parseConstructorArgElements(ele, bd);
+			//解析<Bean>元素的<property>设置
 			parsePropertyElements(ele, bd);
+			//解析<Bean>元素的qualifier属性
 			parseQualifierElements(ele, bd);
-
+			//为当前解析的Bean设置所需的资源和依赖对象
 			bd.setResource(this.readerContext.getResource());
 			bd.setSource(extractSource(ele));
 
@@ -776,8 +798,11 @@ public class BeanDefinitionParserDelegate {
 	 * Parse a constructor-arg element.
 	 */
 	public void parseConstructorArgElement(Element ele, BeanDefinition bd) {
+		//获取index的属性值
 		String indexAttr = ele.getAttribute(INDEX_ATTRIBUTE);
+		//获取type属性值
 		String typeAttr = ele.getAttribute(TYPE_ATTRIBUTE);
+		//获取name属性值
 		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
 		if (StringUtils.hasLength(indexAttr)) {
 			try {
@@ -787,24 +812,33 @@ public class BeanDefinitionParserDelegate {
 				}
 				else {
 					try {
+						//记录<constructor-arg>节点的解析，入栈
 						this.parseState.push(new ConstructorArgumentEntry(index));
+						//将构造器依赖的值解析出来
 						Object value = parsePropertyValue(ele, bd, null);
+						//封装构造器参数的值
 						ConstructorArgumentValues.ValueHolder valueHolder = new ConstructorArgumentValues.ValueHolder(value);
+						//设置类型
 						if (StringUtils.hasLength(typeAttr)) {
 							valueHolder.setType(typeAttr);
 						}
+						//设置构造器参数变量名
 						if (StringUtils.hasLength(nameAttr)) {
 							valueHolder.setName(nameAttr);
 						}
+						//资源设置
 						valueHolder.setSource(extractSource(ele));
+						//假如构造器参数已经注册了值，则报错
 						if (bd.getConstructorArgumentValues().hasIndexedArgumentValue(index)) {
 							error("Ambiguous constructor-arg entries for index " + index, ele);
 						}
 						else {
+							//设置构造器的值
 							bd.getConstructorArgumentValues().addIndexedArgumentValue(index, valueHolder);
 						}
 					}
 					finally {
+						//出栈
 						this.parseState.pop();
 					}
 				}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:tanlin="http://www.tanlin.com/schema/user"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+        http://www.tanlin.com/schema/user
+        http://www.tanlin.com/schema/user.xsd">
+
+  <bean id="bean4" class="com.tan.LifecycleTestBean" depends-on="bean2"/>
+
+  <bean id="bean3" class="com.tan.LifecycleTestBean" depends-on="bean2"/>
+
+  <bean id="bean1" class="com.tan.LifecycleTestBean"/>
+
+  <bean id="bean2" class="com.tan.LifecycleTestBean" depends-on="bean1"/>
+
+	<tanlin:user id="myuser" username="tanlin" email="tanlin@jd.com" />
+<!--  <bean id="bean2Proxy" class="org.springframework.aop.framework.ProxyFactoryBean">-->
+<!--    <property name="target" ref="bean2"/>-->
+<!--  </bean>-->
+
+</beans>

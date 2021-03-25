@@ -152,7 +152,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
         }
         // 3.解析前处理, 留给子类实现
         preProcessXml(root);
-		// 4.解析并注册bean定义
+		// 4.解析并注册bean定义（核心）
         parseBeanDefinitions(root, this.delegate);
 		// 5.解析后处理, 留给子类实现
         postProcessXml(root);
@@ -185,6 +185,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
                     Element ele = (Element) node;
                     if (delegate.isDefaultNamespace(ele)) {
 						// 1.1 默认命名空间节点的处理，例如： <bean id="test" class="" />
+						//核心解析
                         parseDefaultElement(ele, delegate);
                     } else {
 						// 1.2 自定义命名空间节点的处理，例如：<context:component-scan/>、<aop:aspectj-autoproxy/>
@@ -305,17 +306,20 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
      * and registering it with the registry.
      */
     protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+    	//解析xml元素(核心)
         BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
         if (bdHolder != null) {
             bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
             try {
                 // Register the final decorated instance.
+				//向ioc容器注册解析得到的BeanDefinition
                 BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());
             } catch (BeanDefinitionStoreException ex) {
                 getReaderContext().error("Failed to register bean definition with name '" +
                         bdHolder.getBeanName() + "'", ele, ex);
             }
             // Send registration event.
+			//在BeanDefinition向ioc容器注册完之后，发送消息
             getReaderContext().fireComponentRegistered(new BeanComponentDefinition(bdHolder));
         }
     }

@@ -1,6 +1,7 @@
 package com.tan;
 
 
+import com.tan.selftag.User;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -14,9 +15,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class Debug {
 	public static void main(String[] args) {
 		System.out.println("aa");
-		ApplicationContext ctx = new ClassPathXmlApplicationContext("lifecycleTests.xml");
+		ApplicationContext ctx = new ClassPathXmlApplicationContext("com/tan/lifecycleTests.xml");
+		LifecycleTestBean lifecycleTestBean = (LifecycleTestBean) ctx.getBean("bean1");
 
+		User user = (User) ctx.getBean("myuser");
 
-		System.out.println("sss");
+		System.out.println("sss"+user.getEmail());
 	}
 }

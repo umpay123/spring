@@ -528,7 +528,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		// 2.记录统计前BeanDefinition的加载个数
         int countBefore = getRegistry().getBeanDefinitionCount();
 		// 3.createReaderContext：根据resource创建一个XmlReaderContext
-		// 4.registerBeanDefinitions：加载及注册Bean定义
+		// 4.registerBeanDefinitions：加载及注册Bean定义（核心）
         documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
 		// 5.返回本次加载的BeanDefinition个数
         return getRegistry().getBeanDefinitionCount() - countBefore;
